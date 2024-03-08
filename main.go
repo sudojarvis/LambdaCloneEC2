@@ -18,19 +18,20 @@ import (
 
 
 func main() {
-	
+	// createing aws session
 	sess, err := getSession()
 	if err != nil {
 		fmt.Println("Error creating session:", err)
 		return
 	}
-
+	// get lambda service started
 	lambdaSvc, err := getLambdaService(sess)
 	if err != nil {
 		fmt.Println("Error creating Lambda service:", err)
 		return
 	}
 
+	// get lambda function configuration
 	config, err := lambdaSvc.GetFunction(&lambda.GetFunctionInput{
 		FunctionName: aws.String("hello"),  // hardcoded the function name
 	})
@@ -54,6 +55,7 @@ func main() {
 
 	fmt.Println(config)
 
+	// get package type from configuration of lambda function
 	packageType := *config.Configuration.PackageType
 
 	ec2Svc, err := getEC2Service(sess)
@@ -68,7 +70,7 @@ func main() {
 	
 	keyPairName := "xyz"
 
-	pemPath, err := createKeyPair(ec2Svc, keyPairName)
+	pemPath, err := createKeyPair(ec2Svc, keyPairName) // create key pair
 
 
 
@@ -80,7 +82,7 @@ func main() {
 	// pemPath := keyPairName + ".pem"
 
 
-
+	// run instance of ec2
 	runParams := &ec2.RunInstancesInput{
 
 		ImageId:      aws.String("ami-07d9b9ddc6cd8dd30"),
@@ -97,6 +99,7 @@ func main() {
 		return
 	}
 
+	// get instance id of ec2
 	instanceID := *runResult.Instances[0].InstanceId
 	fmt.Println("Created instance", instanceID)
 
@@ -114,6 +117,7 @@ func main() {
 		return
 	}
 
+	// get public dns
 	publicDNS := *result.Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicDnsName
 	fmt.Println("Public DNS:", publicDNS)
 
